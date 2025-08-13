@@ -9,6 +9,7 @@ cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 detectaMao = mp.solutions.hands
 maos = detectaMao.Hands()
 mpDesenho = mp.solutions.drawing_utils
+executou = False
 
 while True:
     ok, imagem = cam.read()
@@ -17,7 +18,7 @@ while True:
         print("Hove uma falha :(")
         break
 
-    imagem = cv2.cvtColor(imagem, cv2.COLOR_BGR2RGB)
+    # imagem = cv2.cvtColor(imagem, cv2.COLOR_BGR2RGB) 
     resultado = maos.process(imagem)
 
     if resultado.multi_hand_landmarks:
@@ -27,18 +28,24 @@ while True:
     if resultado.multi_hand_landmarks:
         for hand_landmarks in resultado.multi_hand_landmarks:
 
-            polegar = hand_landmarks.landmark[4].y < hand_landmarks.landmark[3].y
+            polegar= hand_landmarks.landmark[4].y < hand_landmarks.landmark[3].y
             indicador = hand_landmarks.landmark [8].y > hand_landmarks.landmark [6].y
             medio = hand_landmarks.landmark[12].y > hand_landmarks.landmark[10].y
             anelar = hand_landmarks.landmark[16].y > hand_landmarks.landmark[14].y
             mindinho = hand_landmarks.landmark[20].y > hand_landmarks.landmark[18].y
+            
+            mao_fechada = polegar and indicador and medio and anelar and mindinho
 
-            if polegar and indicador and medio and anelar and mindinho:
+            if mao_fechada and executou == False:
                 pyautogui.press("space")
                 print("ta funcionando")
-
+                executou = True
+            
+            elif executou == True and not mao_fechada:
+                executou = False 
 
     cv2.imshow("Câmera", imagem)
+    imagem = cv2.cvtColor(imagem, cv2.COLOR_BGR2RGB) 
 
     if cv2.waitKey(1) & 0xFF == ord('x'):
         break
